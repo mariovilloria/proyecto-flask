@@ -14,6 +14,7 @@ def app(monkeypatch):
 
     # 3. Activar modo testing en la instancia global de Flask
     app_module.app.config["TESTING"] = True
+    app_module.app.config["WTF_CSRF_ENABLED"] = False
 
     return app_module.app
 
