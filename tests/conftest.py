@@ -5,13 +5,14 @@ from app import app as flask_app
 
 @pytest.fixture
 def app():
-    # 1. Crear cliente FALSO en memoria
+    # 1. **NO TOCAMOS** el cliente real de Flask
+    #    Creamos una app PARALEla que use mongomock
     mongo_client = mongomock.MongoClient()
 
-    # 2. **NO tocamos** el cliente real de Flask
-    #    Creamos una app PARALEla que use mongomock
+    # 2. **Sustituimos la referencia global ANTES** de que Flask la use
+    #    (esto reemplaza el MongoClient real que creas en app/__init__.py)
     from app import db
-    # Sustituimos TODO el cliente y la base
+    # **Sustituimos directamente el cliente y la base**
     db.client = mongo_client
     db.db = mongo_client["vehiculos_test"]
 
@@ -22,7 +23,7 @@ def app():
         "WTF_CSRF_ENABLED": False
     })
 
-    yield flask_app 
+    yield flask_app
 
 @pytest.fixture
 def client(app):
