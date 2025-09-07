@@ -8,9 +8,11 @@ def app():
     # 1. Crear cliente FALSO en memoria
     mongo_client = mongomock.MongoClient()
 
-    # 2. **Sobrescribir** la variable global ANTES de que Flask la use
+    # 2. **Sobrescribir la variable global ANTES** de que Flask la use
     #    (esto reemplaza el MongoClient real que creas en app/__init__.py)
     from app import db
+    # IMPORTANTE: no tocamos db.client (es solo lectura)
+    # Sustituimos directamente el cliente y la base
     db.client = mongo_client
     db.db = mongo_client["vehiculos_test"]
 
