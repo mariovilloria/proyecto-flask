@@ -1,8 +1,8 @@
 # tests/conftest.py
 import pytest
 import mongomock
-from myapp import create_app  # importa tu factory de Flask
-import myapp
+from app import create_app  # importa tu factory de Flask
+import app
 
 @pytest.fixture
 def app(monkeypatch):
