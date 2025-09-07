@@ -1,19 +1,23 @@
 import pytest
 import mongomock
 from app import app as flask_app
-import app as app_module  # importa tu módulo para reemplazar db
 
 @pytest.fixture
-def app(monkeypatch):
-    # Crear DB de prueba en memoria
-    test_db = mongomock.MongoClient().my_database
+def app():
+    # 1. Cliente FALSO en memoria
+    mongo_client = mongomock.MongoClient()
 
-    # Reemplazar la variable db de tu app por la de prueba
-    monkeypatch.setattr(app_module, "db", test_db)
-
-    # Configuración de test
-    flask_app.config["TESTING"] = True
-    flask_app.config["WTF_CSRF_ENABLED"] = False  # opcional si usas Flask-WTF
+    # 2. Sustituir el cliente ANTES de que Flask arranque
+    #    (esto sobrescribe el cliente real que creas en app/__init__.py)
+    flask_app.config.update({
+        "TESTING": True,
+        "MONGO_URI": "mongomock://localhost/vehiculos_test",
+        "WTF_CSRF_ENABLED": False
+    })
+    # Reemplazamos la referencia global
+    from app import db
+    db.client = mongo_client
+    db.db = mongo_client["vehiculos_test"]
 
     yield flask_app
 
