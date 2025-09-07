@@ -1,31 +1,26 @@
+# tests/conftest.py
 import pytest
 import mongomock
-from flask import Flask
-from app import app as flask_app
+from app import create_app
 
 @pytest.fixture
-def app():
-    # 1. **NO TOCAMOS** el cliente real de Flask
-    #    Creamos una app PARALEla que use mongomock
+def app(monkeypatch):
+    # 1. Cliente Mongo falso
     mongo_client = mongomock.MongoClient()
 
-    # 2. **Sustituimos la referencia global ANTES** de que Flask la use
-    #    (esto reemplaza el MongoClient real que creas en app/__init__.py)
-    #    **NO tocamos db.client (es solo lectura)**
-    from app import db
-    # **Sustituimos directamente el cliente y la base**
-    db.client = mongo_client
-    db.db = mongo_client["vehiculos_test"]
+    # 2. Base de datos simulada (usa el mismo nombre que en tu app real)
+    fake_db = mongo_client["test_db"]
 
-    # 3. Configurar Flask
-    flask_app.config.update({
-        "TESTING": True,
-        "MONGO_URI": "mongomock://localhost/vehiculos_test",
-        "WTF_CSRF_ENABLED": False
-    })
+    # 3. Parchar la referencia global db en tu app
+    import app
+    monkeypatch.setattr(app, "db", fake_db)
 
-    yield flask_app
+    # 4. Crear instancia de Flask en modo test
+    app_instance = create_app({"TESTING": True})
+    return app_instance
+
 
 @pytest.fixture
 def client(app):
+    """Cliente de prueba de Flask"""
     return app.test_client()
