@@ -22,7 +22,7 @@ def app():
         "WTF_CSRF_ENABLED": False
     })
 
-    yield flask_app
+    yield flask_app 
 
 @pytest.fixture
 def client(app):
