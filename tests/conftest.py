@@ -1,28 +1,29 @@
 import pytest
+import mongomock
 from app import app as flask_app
-import mongomock  # ← nueva librería
+from app import db   # esto importa el cliente ACTUAL
 
 @pytest.fixture
 def app():
-    # Crear cliente FALSO en memoria
+    # 1. Crear cliente FALSO
     mongo_client = mongomock.MongoClient()
-    # Reemplazar el cliente real por el falso
+
+    # 2. Reemplazar el cliente ANTES de que Flask arranque
+    #    Como en tu __init__.py haces algo como:
+    #    mongo = MongoClient(...)  → ahora lo sobreescribimos
+    db.client = mongo_client
+    db.db = mongo_client["vehiculos_test"]
+
+    # 3. Configurar Flask
     flask_app.config.update({
         "TESTING": True,
         "MONGO_URI": "mongomock://localhost/vehiculos_test",
         "WTF_CSRF_ENABLED": False
     })
-    # Sustituir la base de datos
-    flask_app.config["MONGO_CLIENT"] = mongo_client
-    # Actualizar la referencia global
-    from app import db
-    db.client = mongo_client
-    db.name = "vehiculos_test"
-    db.db = mongo_client["vehiculos_test"]
 
     yield flask_app
 
-    # No hace falta drop_database: es memoria
+    # 4. No hace falta drop_database: es memoria
 
 @pytest.fixture
 def client(app):
