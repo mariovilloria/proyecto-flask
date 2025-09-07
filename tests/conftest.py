@@ -23,7 +23,7 @@ def app(monkeypatch):
     # Esto depende de cómo estés usando db, ejemplo:
     # si en tu app haces: from myapp import db
     # entonces:
-    monkeypatch.setattr(myapp, 'db', test_db)
+    monkeypatch.setattr(app, 'db', test_db)
 
     yield app
 
