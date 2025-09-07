@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Tarjeta de Rendimiento -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Mi Rendimiento</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col">
+                    <div class="display-4">{{ task_counts.pending }}</div>
+                    <div class="text-muted">Tareas Pendientes</div>
+                </div>
+                <div class="col">
+                    <div class="display-4">{{ task_counts.in_progress }}</div>
+                    <div class="text-muted">Tareas en Progreso</div>
+                </div>
+                <div class="col">
+                    <div class="display-4">{{ task_counts.completed }}</div>
+                    <div class="text-muted">Tareas Completadas</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Órdenes en progreso -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <h5>Órdenes en Progreso</h5>
+        </div>
+        <div class="card-body">
+            {% if pending_in_progress %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th># Orden</th>
+                                <th>Cliente</th>
+                                <th>Vehículo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in pending_in_progress %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.client.name }}</td>
+                                <td>{{ order.vehicle.plate }}</td>
+                                <td>
+                                    <span class="badge bg-warning">En Progreso</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('ordenes.ver_orden_tecnico', order_id=order._id) }}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No hay órdenes en progreso</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center">No hay órdenes en progreso</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Órdenes completadas -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5>Órdenes Completadas</h5>
+        </div>
+        <div class="card-body">
+            {% if completed %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th># Orden</th>
+                                <th>Cliente</th>
+                                <th>Vehículo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in completed %}
+                            <tr>
+                                <td>{{ order.order_number }}</td>
+                                <td>{{ order.client.name }}</td>
+                                <td>{{ order.vehicle.plate }}</td>
+                                <td>
+                                    <span class="badge bg-success">Completada</span>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('ordenes.ver_orden_tecnico', order_id=order._id) }}" 
+                                       class="btn btn-sm btn-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">No hay órdenes completadas</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center">No hay órdenes completadas</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

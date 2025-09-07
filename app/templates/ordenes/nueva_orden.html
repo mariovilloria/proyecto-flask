@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h4 mb-0">Nueva Orden Rápida</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label class="form-label">Número de Placa</label>
+                            <input type="text" 
+                                   name="quick_search" 
+                                   class="form-control" 
+                                   placeholder="Ingrese la placa del vehículo"
+                                   required>
+                            <div class="form-text">
+                                Si la placa existe, se usarán los datos registrados. 
+                                Si no, se creará un registro temporal.
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% if current_user_info.role == 'administrador' %}{{ url_for('ordenes.list_ordenes') }}{% else %}{{ url_for('ordenes.list_ordenes') }}{% endif %}"  
+                               class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" 
+                                    class="btn btn-danger">
+                                <i class="bi bi-plus-lg me-2"></i>Crear Orden
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+<!-- En templates/usuarios/registro.html -->
+{% extends "base.html" %} {% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+      {{ 'Editar' if editing else 'Registro de' }} {% if rol %}{{ rol|capitalize
+      }}{% else %}Usuario{% endif %}
+    </h2>
+    <a
+      href="{{ url_for('usuarios.list_clientes' if rol == 'cliente' else 'usuarios.list_tecnicos' if rol == 'tecnico' else 'usuarios.list_supervisores' if rol == 'supervisor' else 'usuarios.list_vendedores' if rol == 'vendedor' else 'dashboard.administrador_dashboard') }}"
+      class="btn btn-outline-secondary"
+    >
+      <i class="bi bi-arrow-left"></i> Volver
+    </a>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">
+        Información del {% if rol %}{{ rol|capitalize }}{% else %}Usuario{%
+        endif %}
+      </h5>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('usuarios.registro', rol=rol) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />        
+        {% if editing %}
+        <input type="hidden" name="editing" value="true" readonly />
+        <input type="hidden" name="user_id" value="{{ user._id }}" readonly />
+        {% endif %}
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Nombre completo</label>
+            <input
+              type="text"
+              name="name"
+              class="form-control"
+              required
+              value="{{ user.name if user else '' }}"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Cédula</label>
+            <input type="text" name="cedula" class="form-control" required
+            value="{{ user.cedula if user else '' }}" {{ 'readonly' if editing
+            else '' }}>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Teléfono</label>
+            <input
+              type="tel"
+              name="phone"
+              class="form-control"
+              value="{{ user.phone if user else '' }}"
+            />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              value="{{ user.email if user else '' }}"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label class="form-label">Dirección</label>
+            <textarea name="address" class="form-control" rows="2">
+{{ user.address if user else '' }}</textarea
+            >
+          </div>
+        </div>
+
+        {% if not editing %} {% endif %}
+
+        <!-- Mostrar campo de specialty solo para técnicos -->
+        {% if rol == 'tecnico' %}
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label class="form-label">Especialidad</label>
+            <input
+              type="text"
+              name="specialty"
+              class="form-control"
+              value="{{ user.especialidad if user else '' }}"
+              placeholder="Ej: Electricista, Mecánico, Laminador"
+            />
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="d-flex justify-content-end gap-2">
+          <a
+            href="{{ url_for('usuarios.list_clientes' if rol == 'cliente' else 'usuarios.list_tecnicos' if rol == 'tecnico' else 'usuarios.list_supervisores' if rol == 'supervisor' else 'dashboard.administrador_dashboard') }}"
+            class="btn btn-outline-secondary"
+          >
+            <i class="bi bi-x-lg"></i> Cancelar
+          </a>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save"></i> {{ 'Actualizar' if editing else
+            'Registrar' }} {% if rol %}{{ rol|capitalize }}{% else %}Usuario{%
+            endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

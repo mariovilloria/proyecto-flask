@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Orden #{{ order.order_number }}</h2>
+        <a href="{{ url_for('dashboard.tecnico_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-2"></i>Mis Tareas
+        </a>
+    </div>
+
+    <!-- Información del cliente -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5>Información del Cliente</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Nombre:</strong> {{ client.name }}</p>
+                    <p><strong>Cédula:</strong> {{ client.cedula }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Teléfono:</strong> {{ client.phone }}</p>
+                    <p><strong>Email:</strong> {{ client.email }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del vehículo -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5>Información del Vehículo</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Placa:</strong> {{ vehicle.plate }}</p>
+                    <p><strong>Marca:</strong> {{ vehicle.make }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Modelo:</strong> {{ vehicle.model }}</p>
+                    <p><strong>Color:</strong> {{ vehicle.color }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Tareas -->
+<div class="card">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+        <h5>Mis Tareas Asignadas</h5>
+        {% if order.status == 'completed' %}
+        <span class="badge bg-success">Orden completada</span>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        {% if order.status == 'completed' %}
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>Esta orden está completada y no puede modificarse
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{{ url_for('ordenes.actualizar_tareas_tecnico', order_id=order._id) }}" 
+              {% if order.status == 'completed' %}onsubmit="return false;"{% endif %}>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Descripción</th>
+                            <th>Estado</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                    {{task.status}}
+                        <tr>
+                            <td>{{ task.description }}</td>
+                            <td>
+                                <select class="form-select" 
+                                        name="task-{{ task._id }}"
+                                        {% if task.status == 'completed' %}disabled{% endif %}>
+                                    <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>
+                                        Pendiente
+                                    </option>
+                                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>
+                                        En progreso
+                                    </option>
+                                    <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>
+                                        Completada
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
+                                <textarea class="form-control" 
+                                          name="obs-{{ task._id }}" 
+                                          rows="2"
+                                          {% if task.status == 'completed' %}disabled{% endif %}>
+                                    {{ task.observations }}
+                                </textarea>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center">No hay tareas asignadas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" 
+                    class="btn btn-success" 
+                    {% if order.status == 'completed' %}disabled{% endif %}>
+                <i class="bi bi-save me-2"></i>Guardar Cambios
+            </button>
+        </form>
+    </div>
+</div>
+</div>
+{% endblock %}

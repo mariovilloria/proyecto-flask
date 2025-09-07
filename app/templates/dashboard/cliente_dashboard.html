@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Mis Órdenes de Servicio</h2>
+    
+    <!-- Tarjetas de resumen rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">Órdenes Pendientes</h5>
+                    <h1 class="display-4">{{ stats.pending }}</h1>
+                    <a href="#pending" class="btn btn-outline-warning">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">En Progreso</h5>
+                    <h1 class="display-4">{{ stats.in_progress }}</h1>
+                    <a href="#progress" class="btn btn-outline-info">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <h5 class="card-title">Completadas</h5>
+                    <h1 class="display-4">{{ stats.completed }}</h1>
+                    <a href="#completed" class="btn btn-outline-success">Ver detalles</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de órdenes -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5>Historial de Órdenes</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th># Orden</th>
+                            <th>Vehículo</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in ordenes %}
+                        <tr id="order-{{ order._id }}">
+                            <td>{{ order.order_number }}</td>
+                            <td>{{ order.vehicle.make }} {{ order.vehicle.model }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if order.status == 'pending' %}bg-warning
+                                    {% elif order.status == 'in_progress' %}bg-info
+                                    {% else %}bg-success{% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                            <td>{{ order.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('ordenes.detalle_orden', order_id=order._id, from_page='cliente_dashboard') }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No hay órdenes registradas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

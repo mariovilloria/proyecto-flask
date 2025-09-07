@@ -1,0 +1,217 @@
+<!-- En templates/dashboard/administrador.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>Dashboard Administrador</h2>
+    <p class="mb-4">Bienvenido, {{ current_user.name  }}!</p>
+    
+    <!-- Tarjetas de estadísticas básicas -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-header">Supervisores</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.roles.supervisor }}</h5>
+                    <a href="{{ url_for('usuarios.list_supervisores') }}" class="btn btn-light">Gestionar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-header">Vendedores</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.roles.vendedor }}</h5>
+                    <a href="{{ url_for('usuarios.list_vendedores') }}" class="btn btn-light">Gestionar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-danger mb-3">
+                <div class="card-header">Tecnicos</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.roles.tecnico }}</h5>
+                    <a href="{{ url_for('usuarios.list_tecnicos') }}" class="btn btn-light">Gestionar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Clientes</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.roles.cliente }}</h5>
+                    <a href="{{ url_for('usuarios.list_clientes') }}" class="btn btn-light">Gestionar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Vehículos</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.total_vehicles }}</h5>
+                    <a href="{{ url_for('vehiculos.list_vehiculos') }}" class="btn btn-light">Gestionar</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-white bg-info mb-3">
+                <div class="card-header">Órdenes</div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ stats.total_orders }}</h5>
+                    <a href="{{ url_for('ordenes.list_ordenes') }}" class="btn btn-light">Gestionar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Órdenes recientes -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Órdenes Recientes</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Número</th>
+                            <th>Cliente</th>
+                            <th>Vehículo</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>                           
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in stats.recent_orders %}
+                        <tr>
+                            <td>{{ order.order_number }}</td>
+                            <td>{{ order.client_name }}</td>
+                            <td>{{ order.vehicle_plate }}</td>
+                            <td>{{ order.created_at.strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if order.status == 'pending' %}bg-warning
+                                    {% elif order.status == 'in_progress' %}bg-info
+                                    {% elif order.status == 'completed' %}bg-success
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ order.status }}
+                                </span>
+                                {% if order.registration_status == 'pending' %}
+                                <span class="badge bg-danger">Registro incompleto</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('ordenes.detalle_orden', order_id=order['_id'], from_page='administrador_dashboard') }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>                 
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<!-- Añadir gráficos y tablas -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Órdenes por Mes (Últimos 6 meses)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="ordersChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Técnicos más activos</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Técnico</th>
+                                <th>Tareas</th>
+                                <th>Completadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tech in tecnicos_stats %}
+                                <tr>
+                                    <td>{{ tech.name }}</td>
+                                    <td>{{ tech.total_tasks }}</td>
+                                    <td>{{ tech.completed_tasks }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">No hay técnicos</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de órdenes por mes
+    const ctx = document.getElementById('ordersChart').getContext('2d');
+    const monthsData = {{ months_data|tojson }};
+    
+    const labels = monthsData.map(item => item.month);
+    const data = monthsData.map(item => item.orders);
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Órdenes',
+                data: data,
+                backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                borderColor: 'rgb(13, 110, 253)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Órdenes por mes'
+                }
+            }
+        }
+    });
+});
+</script>    
+    <!-- Enlaces rápidos -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Acciones Rápidas</h5>
+        </div>
+        <div class="card-body">
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('usuarios.nuevo_supervisor')}}" class="btn btn-warning">Nuevo Supervisor</a>
+                <a href="{{ url_for('usuarios.nuevo_tecnico', return_to = 'administrador')}}" class="btn btn-primary">Nuevo Técnico</a>
+                <a href="{{ url_for('usuarios.nuevo_cliente', return_to = 'administrador')}}" class="btn btn-success">Nuevo Cliente</a>
+                <a href="{{ url_for('usuarios.nuevo_vendedor', return_to = 'administrador') }}" class="btn btn-secondary">Nuevo Vendedor</a>
+                <a href="{{ url_for('ordenes.nueva_orden', return_to = 'administrador') }}" class="btn btn-info">Nueva Orden</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

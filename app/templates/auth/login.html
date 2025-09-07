@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Iniciar Sesión</h4>
+            </div>
+            <div class="card-body">
+<!-- En templates/auth/login.html -->
+<form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+        <label class="form-label">Cédula</label>
+        <input type="text" name="cedula" class="form-control" required>  <!-- Mantener name="username" para compatibilidad -->
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input type="password" name="password" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+</form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

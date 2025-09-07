@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Gestión de Vendedores</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('usuarios.nuevo_vendedor') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Nuevo Vendedor
+        </a>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('dashboard.administrador_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive" style="width: 100%">
+    <table class="table table-striped" style="width: 100%">
+        <thead>
+            <tr>
+                <th>Cedula</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Fecha de Registro</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+                       {% for vendedor in vendedores %}
+                        <tr>
+                            <td>{{ vendedor.cedula }}</td>
+                            <td>{{ vendedor.name }}</td>
+                            <td>{{ vendedor.phone }}</td>
+                            <td>{{ vendedor.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('usuarios.editar_usuario', user_id=vendedor._id) }}"  class="btn btn-sm btn-warning">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+<form method="POST" action="{{ url_for('usuarios.eliminar_usuario', user_id=vendedor._id) }}" 
+      style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <button type="submit" class="btn btn-sm btn-danger" 
+            onclick="return confirm('¿Estás seguro de eliminar este usuario?')">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>
+                    <a href="{{ url_for('usuarios.reset_password', user_id=vendedor._id) }}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-key"></i> Resetear
+                    </a>   
+                            </td>
+                        </tr>
+                        {% endfor %}
+        </tbody>
+    </table>
+</div>
+    </div>
+</div>
+{% endblock %}

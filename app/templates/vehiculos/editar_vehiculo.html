@@ -1,0 +1,91 @@
+<!-- En templates/editar_vehiculo.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Editar Vehículo</h2>
+        <a href="{{ url_for('vehiculos.list_vehiculos') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Información del Vehículo</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Placa</label>
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <input type="text" name="plate" class="form-control" value="{{ vehiculo.plate }}" readonly required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Marca</label>
+                        <input type="text" name="make" class="form-control" value="{{ vehiculo.make }}" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Modelo</label>
+                        <input type="text" name="model" class="form-control" value="{{ vehiculo.model }}" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Año</label>
+                        <input type="number" name="year" class="form-control" value="{{ vehiculo.year if vehiculo.year else '' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Color</label>
+                        <input type="text" name="color" class="form-control" value="{{ vehiculo.color if vehiculo.color else '' }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Cliente</label>
+                        <select name="client_id" class="form-select" required>
+                            <option value="">Seleccionar cliente</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente._id }}" 
+                                {% if current_relation and cliente._id == current_relation.client_id %}selected{% endif %}>
+                                {{ cliente.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de Relación</label>
+                        <select name="relation_type" class="form-select" required>
+                            <option value="owner" 
+                                {% if current_relation and current_relation.relation_type == 'owner' %}selected{% endif %}>
+                                Propietario
+                            </option>
+                            <option value="driver" 
+                                {% if current_relation and current_relation.relation_type == 'driver' %}selected{% endif %}>
+                                Conductor
+                            </option>
+                            <option value="corporate" 
+                                {% if current_relation and current_relation.relation_type == 'corporate' %}selected{% endif %}>
+                                Corporativo
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('vehiculos.list_vehiculos') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-lg"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

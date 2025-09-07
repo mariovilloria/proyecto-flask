@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-speedometer2 me-2"></i> Dashboard Supervisor</h2>
+        <div>
+            <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Nueva Orden
+            </a>
+            <a href="{{ url_for('usuarios.list_clientes') }}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-people"></i> Clientes
+            </a>
+            <a href="{{ url_for('vehiculos.list_vehiculos') }}" class="btn btn-outline-secondary ms-2">
+                <i class="bi bi-car-front"></i> Vehículos
+            </a>
+        </div>
+    </div>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h3>{{ stats.total_orders }}</h3>
+                    <p class="mb-0">Total Órdenes (Hoy)</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h3>{{ stats.completed_today }}</h3>
+                    <p class="mb-0">Completadas Hoy</p>
+                </div>
+            </div>
+        </div>        
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h3>{{ stats.active_orders }}</h3>
+                    <p class="mb-0">Órdenes en Ejecución</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h3>{{ stats.pending_orders }}</h3>
+                    <p class="mb-0">Pendientes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="row">
+        <!-- Órdenes del día -->
+        <div class="col-lg-8">
+            <!-- Pendientes y en progreso -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Órdenes del Día (Pendientes / En Progreso)</h5>
+                    <a href="{{ url_for('ordenes.list_ordenes') }}" class="btn btn-sm btn-outline-primary">
+                        Ver todas
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if today_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Orden</th>
+                                    <th>Técnicos</th>
+                                    <th>Vehículo</th>
+                                    <th>Estado</th>
+                                    <th>Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in today_orders %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('ordenes.detalle_orden', order_id=order._id, from_page='supervisor_dashboard') }}">
+                                            {{ order.order_number }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if order.technicians %}
+                                            {{ order.technicians|join(', ') }}
+                                        {% else %}
+                                            <em>Sin asignar</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ order.vehicle_make }} {{ order.vehicle_model }} {{ order.vehicle_color }} - {{ order.vehicle_plate }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if order.status == 'in_progress' %}bg-info
+                                            {% else %}bg-warning{% endif %}">
+                                            {{ order.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ order.created_at.strftime('%H:%M') if order.created_at else '' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <p class="text-muted">No hay órdenes pendientes/en progreso hoy</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Completadas -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Órdenes Completadas Hoy</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_orders %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Orden</th>
+                                    <th>Técnicos</th>
+                                    <th>Vehículo</th>
+                                    <th>Estado</th>
+                                    <th>Hora</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('ordenes.detalle_orden', order_id=order._id, from_page='supervisor_dashboard') }}">
+                                            {{ order.order_number }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if order.technicians %}
+                                            {{ order.technicians|join(', ') }}
+                                        {% else %}
+                                            <em>Sin asignar</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ order.vehicle_make }} {{ order.vehicle_model }} {{ order.vehicle_color }} - {{ order.vehicle_plate }}</td>
+                                    <td>
+                                        <span class="badge bg-success">Completada</span>
+                                    </td>
+                                    <td>{{ order.created_at.strftime('%H:%M') if order.created_at else '' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <p class="text-muted">No hay órdenes completadas hoy</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Técnicos -->
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Técnicos (Hoy)</h5>
+                    <a href="{{ url_for('usuarios.list_tecnicos') }}" class="btn btn-sm btn-outline-primary">
+                        Ver todos
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- En la sección de Técnicos (Hoy), busca el loop de tecnicos_info -->
+{% if tecnicos_info %}
+    <div class="list-group">
+        {% for info in tecnicos_info %}
+        <div class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                    <h6 class="mb-0">{{ info.name }}</h6>
+                    <small class="text-muted">
+                        {% if info.busy %}
+                        <span class="badge bg-danger">Ocupado</span>
+                        {% else %}
+                        <span class="badge bg-success">Disponible</span>
+                        {% endif %}
+                    </small>
+                </div>
+<a href="{{ url_for('dashboard.tecnico_detalle', tecnico_id=info._id) }}" class="btn btn-sm btn-outline-primary">
+    Ver detalles
+</a>                    Ver detalles
+                </a>
+            </div>
+            
+            <!-- Tareas en formato vertical -->
+            <div class="vstack gap-2 mt-3">
+                <div class="d-flex justify-content-between">
+                    <span>Pendientes:</span>
+                    <span class="badge bg-warning">{{ info.counts.pending }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>En Progreso:</span>
+                    <span class="badge bg-primary">{{ info.counts.in_progress }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Completadas:</span>
+                    <span class="badge bg-success">{{ info.counts.completed }}</span>
+                </div>
+            </div>
+
+            <!-- Última tarea -->
+            {% if info.tareas %}
+            <div class="mt-3 pt-2 border-top">
+                <small class="text-muted">Última tarea:</small>
+                <p class="mb-0">{{ info.tareas.0.description if info.tareas.0.description else '—' }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p class="text-muted">No hay técnicos registrados</p>
+{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

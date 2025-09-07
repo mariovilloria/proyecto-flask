@@ -1,0 +1,71 @@
+<!-- En templates/auth/cambiar_clave_primera_vez.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h3 class="mb-0">
+                        <i class="bi bi-key me-2"></i> Cambiar Contraseña (Primera vez)
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST">
+                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <!-- Contraseña actual (cédula) -->
+                        <div class="mb-4">
+                            <label class="form-label">Ingrese la Contraseña Actual</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" 
+                                       name="current_password" 
+                                       class="form-control" 
+                                       required
+                                       placeholder="Ingrese su cédula">
+                            </div>
+                        </div>
+                        
+                        <!-- Nueva contraseña -->
+                        <div class="mb-4">
+                            <label class="form-label">Ingrese la Nueva Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-key"></i>
+                                </span>
+                                <input type="password" 
+                                       name="new_password" 
+                                       class="form-control" 
+                                       required
+                                       placeholder="Ingrese su nueva contraseña">
+                            </div>
+                        </div>
+                        
+                        <!-- Confirmar contraseña -->
+                        <div class="mb-4">
+                            <label class="form-label">Confirme la nueva Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-check-lg"></i>
+                                </span>
+                                <input type="password" 
+                                       name="confirm_password" 
+                                       class="form-control" 
+                                       required
+                                       placeholder="Confirme su nueva contraseña">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2">
+                            <i class="bi bi-save me-2"></i> Guardar Cambios
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

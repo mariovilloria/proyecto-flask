@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+{% set order_completed = order.status == 'completed' %}
+{% set can_edit = current_user.role == 'administrador' %}
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Orden #{{ order['order_number'] }}</h2>
+        <a href="{% if from_page == 'dashboard' %}{{ url_for('dashboard.supervisor_dashboard') }}{% else %}{{ url_for('ordenes.list_ordenes') }}{% endif %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <!-- CARD PRINCIPAL -->
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Detalles de la Orden</h5>
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <span class="small"><strong>Creada por:</strong>
+                        {% if creator %} {{ creator.name }} {% else %} <span class="text-muted">Desconocido</span> {% endif %}
+                    </span>
+                </div>
+                <span class="badge {% if order.registration_status == 'completed' %}bg-success{% else %}bg-danger{% endif %} px-3 py-2">
+                    {{ 'Registro Completo' if order.registration_status == 'completed' else 'Registro Incompleto' }}
+                </span>
+            </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+          <div class="row g-4">
+              <div class="col-md-6">
+                  <label class="text-muted small">Descripción</label>
+                  <p class="h5">{{ order.description }}</p>
+              </div>
+              <div class="col-md-6">
+                  <div class="row g-3">
+                      <div class="col-6">
+                          <label class="text-muted small">Fecha Creación</label>
+                          <p>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                      </div>
+                      <div class="col-6">
+                          <label class="text-muted small">Última Actualización</label>
+                          <p>{{ order.updated_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- Información Cliente y Vehículo -->
+    <div class="row g-4 mb-4">
+
+        <!-- Cliente -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Información del Cliente</h5>
+                </div>
+                <div class="card-body">
+                    {% if client %}
+                        <div class="vstack gap-3">
+                            <p><strong>Nombre:</strong> {{ client.name }}</p>
+                            <p><strong>Cédula:</strong> {{ client.cedula }}</p>
+                            <p><strong>Teléfono:</strong> {{ client.phone }}</p>
+                            <p><strong>Dirección:</strong> {{ client.address }}</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Cliente no encontrado o inactivo
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehículo -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Información del Vehículo</h5>
+                </div>
+                <div class="card-body">
+                    {% if order.registration_status == 'pending' %}
+                      <div class="alert alert-warning">
+                          <i class="bi bi-exclamation-triangle"></i> Registro incompleto.
+                          {% if vehicle %}
+                            <a href="{{ url_for('vehiculos.editar_vehiculo', vehicle_id=vehicle._id, next=url_for('ordenes.detalle_orden', order_id=order._id)) }}" 
+                               class="btn btn-sm btn-warning ms-2">
+                                <i class="bi bi-pencil"></i> Completar datos del vehículo
+                            </a>
+                          {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if vehicle %}
+                        <div class="vstack gap-3">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="text-muted small">Placa</label>
+                                    <p class="h6">{{ vehicle.plate }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <label class="text-muted small">Marca</label>
+                                    <p>{{ vehicle.make }}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="text-muted small">Modelo</label>
+                                    <p>{{ vehicle.model }}</p>
+                                </div>
+                                <div class="col-6">
+                                    <label class="text-muted small">Año</label>
+                                    <p>{{ vehicle.year if vehicle.year else 'N/A' }}</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <label class="text-muted small">Color</label>
+                                    <p>{{ vehicle.color if vehicle.color else 'N/A' }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">Información del vehículo no disponible</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAREAS -->
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Tareas</h5>
+        {% if not order_completed or can_edit %}
+          <div>
+            <button type="button" class="btn btn-sm btn-success me-2" id="add-task-btn">
+              <i class="bi bi-plus-lg"></i> Agregar Tarea
+            </button>
+            <!-- MOVIDO DENTRO DEL FORM -->
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card-body">
+        <form id="tareas-form" method="POST" action="{{ url_for('ordenes.actualizar_tarea', order_id=order._id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tasks-table">
+                    <thead>
+                        <tr>
+                          <th>Descripción</th>
+                          <th>Estado</th>
+                          <th>Técnico</th>
+                          <th>Observaciones</th>
+                          <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                          <tr class="task-row">
+                            <td>
+                              <input type="hidden" name="task-{{ task._id }}-id" value="{{ task._id }}">
+                              <input type="text" name="task-{{ task._id }}-desc" class="form-control"
+                                     value="{{ task.description }}" required 
+                                     {% if order_completed and not can_edit %}disabled{% endif %}>
+                            </td>
+                            <td>
+                                <select name="task-{{ task._id }}-status" class="form-select"
+                                        {% if order_completed and not can_edit %}disabled{% endif %}>
+                                    <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pendiente</option>
+                                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>En Progreso</option>
+                                    <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completada</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="task-{{ task._id }}-tech" class="form-select"
+                                        {% if order_completed and not can_edit %}disabled{% endif %}>
+                                    <option value="">Sin asignar</option>
+                                    {% for tecnico in tecnicos %}
+                                      <option value="{{ tecnico._id }}"
+                                          {% if task.technician_id == tecnico._id %}selected{% endif %}>
+                                          {{ tecnico.name }}
+                                      </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                              <textarea name="task-{{ task._id }}-obs" class="form-control" rows="2"
+                                        {% if order_completed and not can_edit %}disabled{% endif %}>{{ task.observations }}</textarea>
+                            </td>
+                            <td>
+                              <button type="button" class="btn btn-sm btn-danger remove-task"
+                                      {% if order_completed and not can_edit %}disabled{% endif %}>
+                                <i class="bi bi-trash"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if not order_completed or can_edit %}
+              <button type="submit" class="btn btn-primary btn-sm mt-3">
+                <i class="bi bi-save"></i> Guardar Cambios
+              </button>
+            {% endif %}
+        </form>
+      </div>
+    </div>
+
+</div>  <!-- container -->
+
+<!-- PLANTILLA OCULTA PARA NUEVA TAREA -->
+<script type="text/template" id="template-task-row">
+<tr class="task-row">
+    <td>
+        <input type="text" name="__name-desc" class="form-control" placeholder="Descripción de la tarea" required>
+    </td>
+    <td>
+        <select name="__name-status" class="form-select">
+            <option value="pending">Pendiente</option>
+            <option value="in_progress">En Progreso</option>
+            <option value="completed">Completada</option>
+        </select>
+    </td>
+    <td>
+        <select name="__name-tech" class="form-select">
+            <option value="">Sin asignar</option>
+            {% for tecnico in tecnicos %}
+                <option value="{{ tecnico._id }}">{{ tecnico.name }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td>
+        <textarea name="__name-obs" class="form-control" rows="2" placeholder="Observaciones"></textarea>
+    </td>
+    <td>
+        <button type="button" class="btn btn-sm btn-danger remove-task"><i class="bi bi-trash"></i></button>
+    </td>
+</tr>
+</script>
+
+<!-- SCRIPT FINAL -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let taskCounter = {% if tasks %}{{ tasks|length }}{% else %}0{% endif %};
+
+    const tbody = document.querySelector('#tasks-table tbody');
+    const templateHTML = document.getElementById('template-task-row').innerHTML.trim();
+
+    function generateRowHTML(counter) {
+        return templateHTML
+            .replace(/__name-desc/g, `new-task-${counter}-desc`)
+            .replace(/__name-status/g, `new-task-${counter}-status`)
+            .replace(/__name-tech/g, `new-task-${counter}-tech`)
+            .replace(/__name-obs/g, `new-task-${counter}-obs`);
+    }
+
+    document.getElementById('add-task-btn')?.addEventListener('click', function() {
+        taskCounter++;
+        const tr = document.createElement('tr');
+        tr.innerHTML = generateRowHTML(taskCounter);
+        tbody.appendChild(tr);
+
+        tr.querySelector('.remove-task').addEventListener('click', function() {
+            tr.remove();
+        });
+    });
+
+    document.querySelectorAll('.remove-task').forEach(btn => {
+        btn.addEventListener('click', function() {
+            btn.closest('tr').remove();
+        });
+    });
+});
+</script>
+
+{% endblock %}

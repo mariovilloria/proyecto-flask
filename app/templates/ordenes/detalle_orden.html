@@ -1,0 +1,362 @@
+{% extends "base.html" %} {% block content %}
+<div class="container py-4"> 
+    {% set order_completed = order.status == 'completed' %}
+    {% set is_admin = current_user.role == 'administrador' %}
+    {% set is_supervisor = current_user.role == 'supervisor' %}
+    {% set is_vendedor = current_user.role == 'vendedor' %}
+    {% set is_cliente = current_user.role == 'cliente' %}
+    <!-- Encabezado principal --> 
+     <div class="d-flex justify-content-between align-items-center mb-4"> 
+        <h2 class="fw-bold">Orden #{{ order['order_number'] }}</h2> 
+        <a href="
+        {% if from_page == 'administrador_dashboard' %} 
+            {{ url_for('dashboard.administrador_dashboard') }} 
+        {% elif from_page == 'supervisor_dashboard' %} 
+            {{ url_for('dashboard.supervisor_dashboard') }} 
+        {% elif from_page == 'cliente_dashboard' %} 
+            {{ url_for('dashboard.cliente_dashboard') }} 
+        {% elif from_page == 'detalle_tecnico' %} 
+            {{ url_for('dashboard.tecnico_detalle', tecnico_id=tecnico._id) }} 
+        {% elif from_page == 'vendedor_dashboard' %} 
+            {{ url_for('dashboard.vendedor_dashboard') }} 
+        {% elif from_page == 'list_ordenes' %} 
+         {{ url_for('ordenes.list_ordenes') }} 
+        {% else %} 
+            {{ url_for('ordenes.list_ordenes') }} 
+        {% endif %} 
+        " class="btn btn-outline-secondary"> 
+        <i class="bi bi-arrow-left"></i> Volver 
+    </a> 
+    </div>
+    <!-- Tarjeta de información principal --> 
+<!-- Tarjeta de información principal -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white"> 
+        <div class="d-flex justify-content-between align-items-center"> 
+            <h5 class="mb-0 fw-bold"> 
+                <i class="bi bi-file-earmark-text me-2"></i>Detalles de la Orden 
+            </h5>
+            <!-- ✅ Quitar el formulario del header -->
+            <div class="d-flex align-items-center gap-3"> 
+                <div class="d-flex align-items-center"> 
+                    <i class="bi bi-person-circle me-1"></i> 
+                    <span class="small"> 
+                        <strong>Creada por:</strong> 
+                        {% if creator %}
+                        {{ creator.name }}
+                        {% else %} 
+                        <span class="text-muted">Desconocido</span> 
+                        {% endif %} 
+                    </span> 
+                </div> 
+                <span class="badge
+                {% if order.registration_status == 'completed' %}bg-success
+                {% else %}bg-danger{% endif %}
+                px-3 py-2"> 
+                    {{ 'Registro Completo' if order.registration_status == 'completed' else 'Registro Incompleto' }} 
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="card mb-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="text-muted small">Descripción</label>
+                        <p class="h5">{{ order.description }}</p>
+                    </div>
+                    <!-- ✅ Condicional para mostrar formulario o nombre del vendedor -->
+                    <label class="text-muted small">Vendedor</label>
+                    {% if is_admin or is_supervisor %}
+                        <form method="POST" action="{{ url_for('ordenes.reasignar_vendedor', order_id=order._id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <select name="vendor_id" class="form-select mb-2">
+                                <option value="">-- Seleccione un vendedor --</option>
+                                {% for vendedor in vendedores %}
+                                    <option value="{{ vendedor._id }}" 
+                                        {% if assigned_vendor and assigned_vendor._id == vendedor._id %}selected{% endif %}>
+                                        {{ vendedor.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Reasignar</button>
+                        </form>
+                    {% else %}
+                        <p class="h5">
+                            {% if assigned_vendor %}
+                                {{ assigned_vendor.name }}
+                            {% else %}
+                                <span class="text-muted">No asignado</span>
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                </div>
+                <!-- ✅ El resto del código permanece igual -->
+                <div class="col-md-6">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="text-muted small">Fecha Creación</label>
+                            <p>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                        </div>
+                        <div class="col-6">
+                            <label class="text-muted small">Última Actualización</label>
+                            <p>{{ order.updated_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- row -->
+        </div> <!-- inner card -->
+    </div> <!-- card-body -->
+</div> <!-- card -->
+    <!-- Tarjetas en grid -->
+     <div class="row g-4 mb-4 ">
+         <!-- Tarjeta de Cliente -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Información del Cliente</h5>
+                </div>
+                <div class="card-body">
+                    {% if client %}
+                    <div class="vstack gap-3">
+                        <p><strong>Nombre:</strong> {{ client.name }}</p>
+                        <p><strong>Cédula:</strong> {{ client.cedula }}</p>
+                        <p><strong>Teléfono:</strong> {{ client.phone }}</p>
+                        <p><strong>Dirección:</strong> {{ client.address }}</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        Cliente no encontrado o inactivo
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Tarjeta de Vehículo -->
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Información del Vehículo</h5>
+                    {% if order.registration_status == 'pending' %}
+                    <div class="alert alert-warning mt-2">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        Registro incompleto.
+                        <a href="{{ url_for('vehiculos.editar_vehiculo', vehicle_id=vehicle._id, next=url_for('ordenes.detalle_orden', order_id=order._id, from_page=from_page)) }}"
+                        class="btn btn-sm btn-warning ms-2">
+                        <i class="bi bi-pencil"></i> Completar datos del vehículo
+                    </a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if vehicle %}
+                    <div class="vstack gap-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="text-muted small">Placa</label>
+                                <p class="h6">{{ vehicle.plate }}</p>
+                            </div>
+                            <div class="col-6">
+                                <label class="text-muted small">Marca</label>
+                                <p>{{ vehicle.make }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="text-muted small">Modelo</label>
+                                <p>{{ vehicle.model }}</p>
+                            </div>
+                            <div class="col-6">
+                                <label class="text-muted small">Año</label>
+                                <p>{{ vehicle.year if vehicle.year else 'N/A' }}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="text-muted small">Color</label>
+                                <p>{{ vehicle.color if vehicle.color else 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">Información del vehículo no disponible</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sección Tareas -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Tareas</h5>
+
+            {# Botones visibles:
+               - Admin: siempre (aunque la orden esté completada)
+               - Supervisor y Vendedor: solo si la orden NO está completada
+               - Cliente: nunca #}
+            {% if is_admin or (not order_completed and (is_supervisor or is_vendedor)) %}
+            <div>
+                <button type="button" class="btn btn-sm btn-success me-2" id="add-task-btn">
+                    <i class="bi bi-plus-lg"></i> Agregar Tarea
+                </button>
+                <button type="submit" form="tareas-form" class="btn btn-sm btn-primary">
+                    <i class="bi bi-save"></i> Guardar Cambios
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            <form id="tareas-form" method="POST"
+                  action="{{ url_for('ordenes.actualizar_tareas_orden', order_id=order._id, from_page=from_page) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="from_page" value="{{ from_page }}">
+
+                <div class="table-responsive">
+                    <table class="table table-hover" id="tasks-table">
+                        <thead>
+                            <tr>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Técnico</th>
+                                <th>Observaciones</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for task in tasks %}
+                        <tr class="task-row" data-task-id="{{ task._id }}">
+                            <td>
+                                <input type="text" name="task-{{ task._id }}-desc" class="form-control"
+                                       value="{{ task.description }}" required
+                                       {% if is_cliente or (task.status == 'completed' and not is_admin) %}disabled{% endif %}>
+                            </td>
+                            <td>
+                                <select name="task-{{ task._id }}-status" class="form-select"
+                                        {% if is_cliente or is_vendedor or (task.status == 'completed' and not is_admin) %}disabled{% endif %}>
+                                    <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Pendiente</option>
+                                    <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>En Progreso</option>
+                                    <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Completada</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="task-{{ task._id }}-tech" class="form-select"
+                                        {% if is_cliente or is_vendedor or (task.status == 'completed' and not is_admin) %}disabled{% endif %}>
+                                    <option value="">Sin asignar</option>
+                                    {% for tecnico in tecnicos %}
+                                    <option value="{{ tecnico._id }}"
+                                        {% if task.technician_id == tecnico._id %}selected{% endif %}>
+                                        {{ tecnico.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <textarea name="task-{{ task._id }}-obs" class="form-control" rows="2"
+                                          {% if is_cliente or (task.status == 'completed' and not is_admin) %}disabled{% endif %}>{{ task.observations }}</textarea>
+                            </td>
+                            <td>
+                                {% if (is_admin or is_supervisor) and not task.status == 'completed' %}
+                                <button type="button" class="btn btn-sm btn-danger remove-task-existing">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Aquí se insertarán inputs hidden para IDs de tareas eliminadas -->
+                <div id="deleted-container"></div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let taskCounter = {% if tasks %} {{ tasks|length }} {% else %} 0 {% endif %};
+    const isAdmin = {{ 'true' if is_admin else 'false' }};
+    const isSupervisor = {{ 'true' if is_supervisor else 'false' }};
+    const isVendedor = {{ 'true' if is_vendedor else 'false' }};
+    const isCliente = {{ 'true' if is_cliente else 'false' }};
+
+    // Agregar nueva fila
+    const addBtn = document.getElementById('add-task-btn');
+    if (addBtn) {
+        addBtn.addEventListener('click', function() {
+            taskCounter++;
+            const newRow = document.createElement('tr');
+            newRow.className = 'task-row';
+
+            if (isVendedor) {
+                // Vendedor: puede escribir descripción y observaciones, PERO no puede asignar técnico ni cambiar estado.
+                newRow.innerHTML = `
+                    <td><input type="text" name="new-task-${taskCounter}-desc" class="form-control" placeholder="Descripción" required></td>
+                    <td>
+                        <input type="hidden" name="new-task-${taskCounter}-status" value="pending">
+                        <select class="form-select" disabled>
+                            <option selected>Pendiente</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="hidden" name="new-task-${taskCounter}-tech" value="">
+                        <select class="form-select" disabled>
+                            <option selected>Sin asignar</option>
+                        </select>
+                    </td>
+                    <td><textarea name="new-task-${taskCounter}-obs" class="form-control" rows="2" placeholder="Observaciones"></textarea></td>
+                    <td><button type="button" class="btn btn-sm btn-danger remove-task"><i class="bi bi-trash"></i></button></td>
+                `;
+            } else {
+                // Admin / Supervisor: flujo normal
+                newRow.innerHTML = `
+                    <td><input type="text" name="new-task-${taskCounter}-desc" class="form-control" placeholder="Descripción" required></td>
+                    <td>
+                        <select name="new-task-${taskCounter}-status" class="form-select">
+                            <option value="pending">Pendiente</option>
+                            <option value="in_progress">En Progreso</option>
+                            <option value="completed">Completada</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select name="new-task-${taskCounter}-tech" class="form-select">
+                            <option value="">Sin asignar</option>
+                            {% for tecnico in tecnicos %}
+                            <option value="{{ tecnico._id }}">{{ tecnico.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td><textarea name="new-task-${taskCounter}-obs" class="form-control" rows="2" placeholder="Observaciones"></textarea></td>
+                    <td><button type="button" class="btn btn-sm btn-danger remove-task"><i class="bi bi-trash"></i></button></td>
+                `;
+            }
+
+            document.querySelector('#tasks-table tbody').appendChild(newRow);
+            newRow.querySelector('.remove-task').addEventListener('click', function() {
+                newRow.remove();
+            });
+        });
+    }
+
+    // Eliminar filas existentes, agregando hidden input
+    document.querySelectorAll('.remove-task-existing').forEach(button => {
+        button.addEventListener('click', function() {
+            const row = button.closest('tr');
+            const taskId = row.getAttribute('data-task-id');
+
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'delete_task_ids';
+            hiddenInput.value = taskId;
+            document.getElementById('deleted-container').appendChild(hiddenInput);
+
+            row.remove();
+        });
+    });
+});
+</script>
+{% endblock %}

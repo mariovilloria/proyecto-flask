@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+    <div class="col">
+          <h2>Vehículo: {{ vehiculo.plate }}</h2>
+    </div>
+    <div class="col-auto">
+      <a href="{% if current_user_info.role == 'administrador' %}{{ url_for('vehiculos.list_vehiculos') }}{% else %}{{ url_for('vehiculos.list_vehiculos') }}{% endif %}"  class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Volver
+      </a>
+    </div>
+  </div>
+
+    <p><strong>Marca:</strong> {{ vehiculo.make }}</p>
+    <p><strong>Modelo:</strong> {{ vehiculo.model }}</p>
+    <p><strong>Año:</strong> {{ vehiculo.year }}</p>
+
+    <h3 class="mt-4">Órdenes relacionadas</h3>
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>N° Orden</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for orden in ordenes %}
+            <tr>
+                <td>{{ orden.order_number }}</td>
+                <td>{{ orden.cliente }}</td>
+                <td>{{ orden.created_at.strftime("%d/%m/%Y") if orden.created_at else "" }}</td>
+                <td>{{ orden.status }}</td>
+                <td>
+                    <button class="btn btn-info btn-sm ver-detalle" data-id="{{ orden._id }}">
+                        Ver detalle
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal para ver detalle -->
+<div class="modal fade" id="detalleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalle de la Orden</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="detalleContenido">
+          <p class="text-muted">Cargando...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Cuando hagan clic en "Ver detalle"
+document.querySelectorAll(".ver-detalle").forEach(btn => {
+    btn.addEventListener("click", function() {
+        const ordenId = this.dataset.id;
+        const detalleDiv = document.getElementById("detalleContenido");
+        detalleDiv.innerHTML = "<p class='text-muted'>Cargando...</p>";
+
+        // Llamada AJAX para traer detalle de orden
+        fetch(`/vehiculos/ordenes/detalles/${ordenId}`)
+            .then(res => res.text())
+            .then(html => {
+                detalleDiv.innerHTML = html;
+                new bootstrap.Modal(document.getElementById("detalleModal")).show();
+            })
+            .catch(err => {
+                detalleDiv.innerHTML = "<p class='text-danger'>Error al cargar el detalle.</p>";
+            });
+    });
+});
+</script>
+{% endblock %}

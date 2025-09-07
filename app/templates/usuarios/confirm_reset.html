@@ -1,0 +1,25 @@
+<!-- En templates/confirm_reset.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5>Confirmar Reseteo de Contraseña</h5>
+        </div>
+        <div class="card-body">
+            <p>¿Está seguro de resetear la contraseña de <strong>{{ user.name }}</strong>?</p>
+            <p>La nueva contraseña será: <strong>{{ user.cedula }}</strong></p>
+            
+            <form method="POST">
+                <div class="d-flex gap-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <a href="{{ url_for('usuarios.list_clientes' if user.role == 'cliente' else 'usuarios.list_tecnicos' if user.role == 'tecnico' else 'usuarios.list_supervisores' if user.role == 'supervisor' else 'dashboard.administrador_dashboard') }}" 
+                       class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-warning">Confirmar Reseteo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h2>Gestión de Clientes</h2>
+    </div>
+    <div class="col-auto">
+        <a href="{{ url_for('usuarios.nuevo_cliente') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Nuevo Cliente
+        </a>
+    </div>
+    <div class="col-auto">
+        <a href="{% if current_user_info.role == 'administrador' %}{{ url_for('dashboard.administrador_dashboard') }}{% else %}{{ url_for('dashboard.supervisor_dashboard') }}{% endif %}"  class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive" style="width: 100%">
+    <table class="table table-striped" style="width: 100%">
+        <thead>
+            <tr>
+                <th>Cédula</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td>{{ cliente.cedula }}</td>
+                <td>{{ cliente.name }}</td>
+                <td>{{ cliente.phone }}</td>
+                <td>{{ cliente.address }}</td>
+                <td>
+                    <a href="{{ url_for('usuarios.editar_usuario', user_id=cliente._id) }}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+<form method="POST" action="{{ url_for('usuarios.eliminar_usuario', user_id=cliente._id) }}" 
+      style="display: inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-sm btn-danger" 
+            onclick="return confirm('¿Estás seguro de eliminar este usuario?')">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>
+                    <a href="{{ url_for('usuarios.reset_password', user_id=cliente._id) }}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-key"></i> Resetear
+                    </a>   
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    </div>
+</div>
+<!-- Paginación -->
+<nav>
+  <ul class="pagination">
+    {% if page > 1 %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('usuarios.list_clientes', **request.args.copy()|dict_delete('page')|dict_merge({'page': page-1})) }}">
+           Anterior
+        </a>
+      </li>
+    {% endif %}
+
+    <li class="page-item active"><span class="page-link">Pág {{ page }}</span></li>
+
+    {% if clientes|length == per_page %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('usuarios.list_clientes', **request.args.copy()|dict_delete('page')|dict_merge({'page': page+1})) }}">
+           Siguiente
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+
+
+
+{% endblock %}

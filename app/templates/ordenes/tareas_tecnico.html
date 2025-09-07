@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-list-check me-2"></i>Mis Tareas</h2>
+        <a href="{{ url_for('dashboard.tecnico_dashboard') }}" class="btn btn-outline-primary">
+            <i class="bi bi-speedometer2 me-2"></i>Mi Dashboard
+        </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('ordenes.tareas_tecnico') }}">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <select class="form-select" name="status">
+                            <option value="">Todos los estados</option>
+                            <option value="pending">Pendiente</option>
+                            <option value="in_progress">En progreso</option>
+                            <option value="completed">Completada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="date" class="form-control" name="date" 
+                               value="{{ request.args.get('date', '') }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-search me-2"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de tareas -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Orden #</th>
+                            <th>Descripción</th>
+                            <th>Vehículo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tarea in tareas %}
+                        <tr class="task-row" data-task-id="{{ tarea._id }}">
+                            <td>{{ tarea.order_number }}</td>
+                            <td>{{ tarea.description }}</td>
+                            <td>{{ tarea.vehicle_make }} {{ tarea.vehicle_model }}</td>
+                            <td>
+                                <select class="form-select status-select" 
+                                        data-task-id="{{ tarea._id }}">
+                                    <option value="pending" {% if tarea.status == 'pending' %}selected{% endif %}>
+                                        Pendiente
+                                    </option>
+                                    <option value="in_progress" {% if tarea.status == 'in_progress' %}selected{% endif %}>
+                                        En progreso
+                                    </option>
+                                    <option value="completed" {% if tarea.status == 'completed' %}selected{% endif %}>
+                                        Completada
+                                    </option>
+                                </select>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('ordenes.ver_orden_tecnico', order_id=tarea.order_id) }}" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">No hay tareas asignadas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar estado de tarea al cambiar el select
+    document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', function() {
+            const taskId = this.dataset.taskId;
+            const newStatus = this.value;
+            
+            // Aquí iría el código para enviar el cambio al servidor
+            // (Se implementaría en un paso posterior)
+            console.log(`Tarea ${taskId} actualizada a: ${newStatus}`);
+        });
+    });
+});
+</script>
+{% endblock %}

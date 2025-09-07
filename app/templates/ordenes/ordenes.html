@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Órdenes de Trabajo</h2>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('ordenes.nueva_orden') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg me-2"></i>Nueva Orden
+            </a>
+        </div>
+        <div class="col-auto">
+            <a href="
+            {% if current_user_info.role == 'administrador' %}
+                {{ url_for('dashboard.administrador_dashboard') }}
+            {% elif current_user_info.role == 'vendedor' %} 
+                {{ url_for('dashboard.vendedor_dashboard') }}                 
+            {% else %}
+                {{ url_for('dashboard.supervisor_dashboard') }}
+            {% endif %}"  
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulario de filtros -->
+    <form method="get" class="card mb-4 p-3" id="filterForm">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Técnico</label>
+                <select name="technician" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los técnicos</option>
+                    {% for tech in tecnicos %}
+                    <option value="{{ tech._id }}" {% if tech_id == (tech._id|string) %}selected{% endif %}>{{ tech.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Cliente</label>
+                <input type="text" name="client" value="{{ client_query }}" class="form-control" placeholder="Nombre del cliente..." onkeyup="submitWithDelay()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Placa</label>
+                <input type="text" name="plate" value="{{ plate_query }}" class="form-control" placeholder="Placa del vehículo..." onkeyup="submitWithDelay()">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Estado</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los estados</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendiente</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>En Progreso</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completada</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="submit" name="clear" value="1" class="btn btn-secondary w-100">Limpiar</button>
+            </div>
+        </div>
+    </form>
+
+    <script>
+        let typingTimer;
+        function submitWithDelay() {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                document.getElementById('filterForm').submit();
+            }, 600);
+        }
+    </script>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Número</th>
+                    <th>Cliente</th>
+                    <th>Vehículo</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.order_number }}</td>
+                    <td>{{ order.client_name or 'Sin cliente' }}</td>
+                    <td>
+                        {{ order.vehicle_plate }} - {{ order.vehicle_make }} {{ order.vehicle_model }}
+                        {% if order.tasks|length > 0 %}
+                            <br>        <small class="d-block text-muted">
+            {% set unique_techs = [] %}
+            {% for task in order.tasks %}
+                {% if task.technician_name not in unique_techs %}
+                    {{ task.technician_name }}{% if not loop.last %}, {% endif %}
+                    {% set _ = unique_techs.append(task.technician_name) %}
+                {% endif %}
+            {% endfor %}
+        </small>
+                        {% endif %}
+                    </td>
+                    <td>{{ order.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if order.status == 'pending' %}bg-warning
+                            {% elif order.status == 'in_progress' %}bg-info
+                            {% elif order.status == 'completed' %}bg-success
+                            {% else %}bg-secondary{% endif %}">
+                            {{ order.status }}
+                        </span>
+                        {% if order.registration_status == 'pending' %}
+                        <span class="badge bg-danger">Registro incompleto</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('ordenes.detalle_orden', order_id=order['_id'], from_page='list_ordenes') }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                        <form method="POST" action="{{ url_for('ordenes.eliminar_orden', order_id=order['_id']) }}" style="display:inline;">
+                                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-danger" 
+                                    onclick="return confirm('¿Estás seguro de eliminar esta orden?')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">No hay órdenes registradas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+            {% set args = request.args.copy() %}
+<nav>
+  <ul class="pagination">
+    {% if page > 1 %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('ordenes.list_ordenes', **request.args.copy()|dict_delete('page')|dict_merge({'page': page-1})) }}">
+           Anterior
+        </a>
+      </li>
+    {% endif %}
+
+    <li class="page-item active"><span class="page-link">Pág {{ page }}</span></li>
+
+    {% if orders|length == per_page %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('ordenes.list_ordenes', **request.args.copy()|dict_delete('page')|dict_merge({'page': page+1})) }}">
+           Siguiente
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endblock %}
