@@ -1,26 +1,35 @@
-# tests/conftest.py
 import pytest
 import mongomock
-import app as app_module
+from app import create_app
 
+@pytest.fixture(scope="session")
+def app():
+    """
+    Crea una app Flask para testing con una DB simulada (mongomock).
+    """
+    # Inicializa la app en modo testing
+    app = create_app("testing")
+    app.config.update({
+        "TESTING": True,
+        "WTF_CSRF_ENABLED": False  # Desactiva CSRF para que los tests de login funcionen
+    })
 
-@pytest.fixture
-def app(monkeypatch):
-    # 1. Crear cliente y base de datos falsa
-    mongo_client = mongomock.MongoClient()
-    fake_db = mongo_client["test_db"]
+    # Usar mongomock en lugar de Mongo real
+    mock_client = mongomock.MongoClient()
+    app.db = mock_client["test_db"]
 
-    # 2. Parchear el `db` global de app/__init__.py
-    monkeypatch.setattr(app_module, "db", fake_db)
-
-    # 3. Desactivar CSRF y activar modo test
-    app_module.app.config["TESTING"] = True
-    app_module.app.config["WTF_CSRF_ENABLED"] = False
-
-    return app_module.app
-
+    yield app
 
 @pytest.fixture
 def client(app):
-    """Cliente de prueba de Flask"""
+    """
+    Cliente de pruebas que simula requests HTTP.
+    """
     return app.test_client()
+
+@pytest.fixture
+def db(app):
+    """
+    Acceso directo a la base de datos mockeada (para poblarla en tests).
+    """
+    return app.db
