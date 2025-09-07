@@ -17,6 +17,7 @@ def app(monkeypatch):
 
     # Configuración de testing
     flask_app.config['TESTING'] = True
+    flask_app.config['WTF_CSRF_ENABLED'] = False
 
     yield flask_app
 
