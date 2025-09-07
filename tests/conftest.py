@@ -11,6 +11,7 @@ def app():
 
     # 2. **Sustituimos la referencia global ANTES** de que Flask la use
     #    (esto reemplaza el MongoClient real que creas en app/__init__.py)
+    #    **NO tocamos db.client (es solo lectura)**
     from app import db
     # **Sustituimos directamente el cliente y la base**
     db.client = mongo_client
