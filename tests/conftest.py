@@ -12,4 +12,4 @@ def client(app):
 
 @pytest.fixture
 def db(app):
-    return app.db
+    return app.db 
