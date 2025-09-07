@@ -1,5 +1,6 @@
 import pytest
 import mongomock
+from flask import Flask
 from app import app as flask_app
 
 @pytest.fixture
@@ -7,11 +8,10 @@ def app():
     # 1. Crear cliente FALSO en memoria
     mongo_client = mongomock.MongoClient()
 
-    # 2. **Sustituir el cliente ANTES** de que Flask lo use
-    #    (esto reemplaza el MongoClient real que creas en app/__init__.py)
-    #    **NO tocamos db.client (es solo lectura)**
+    # 2. **NO tocamos** el cliente real de Flask
+    #    Creamos una app PARALEla que use mongomock
     from app import db
-    # **Sustituimos directamente el cliente y la base**
+    # Sustituimos TODO el cliente y la base
     db.client = mongo_client
     db.db = mongo_client["vehiculos_test"]
 
