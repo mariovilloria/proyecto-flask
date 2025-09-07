@@ -3,16 +3,17 @@ import pytest
 import mongomock
 import app as app_module
 
+
 @pytest.fixture
 def app(monkeypatch):
-    # 1. Cliente Mongo falso
+    # 1. Crear cliente y base de datos falsa
     mongo_client = mongomock.MongoClient()
     fake_db = mongo_client["test_db"]
 
-    # 2. Parchar la referencia global db en tu módulo app
+    # 2. Parchear el `db` global de app/__init__.py
     monkeypatch.setattr(app_module, "db", fake_db)
 
-    # 3. Activar modo testing en la instancia global de Flask
+    # 3. Desactivar CSRF y activar modo test
     app_module.app.config["TESTING"] = True
     app_module.app.config["WTF_CSRF_ENABLED"] = False
 
