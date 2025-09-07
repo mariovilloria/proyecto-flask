@@ -1,38 +1,29 @@
 # tests/conftest.py
 import pytest
 import mongomock
-from app import create_app  # importa tu factory de Flask
-import app
+from app import app as flask_app, db  # importar app y db reales
+import app as app_module
 
 @pytest.fixture
 def app(monkeypatch):
-    """Crea una app de Flask para tests con base de datos mongomock."""
-    
-    # 1. Crear cliente de Mongo falso
+    """Crea una app de Flask para tests con mongomock."""
+
+    # Crear cliente de Mongo falso
     mongo_client = mongomock.MongoClient()
-    test_db = mongo_client['test_database']  # nombre de la DB de prueba
+    test_db = mongo_client['test_database']
 
-    # 2. Reemplazar MongoClient en tu app antes de crearla
-    # Suponiendo que en __init__.py haces: mongo = MongoClient(...).db_name
-    monkeypatch.setattr('myapp.MongoClient', mongomock.MongoClient)
+    # Reemplazar db de la app por la db de prueba
+    monkeypatch.setattr(app_module, 'db', test_db)
 
-    # 3. Crear la app de Flask con configuración de TESTING
-    app = create_app({'TESTING': True})
+    # Configuración de testing
+    flask_app.config['TESTING'] = True
 
-    # 4. Reemplazar db de tu app por el db de prueba
-    # Esto depende de cómo estés usando db, ejemplo:
-    # si en tu app haces: from myapp import db
-    # entonces:
-    monkeypatch.setattr(app, 'db', test_db)
-
-    yield app
+    yield flask_app
 
 @pytest.fixture
 def client(app):
-    """Fixture para usar el test client de Flask."""
     return app.test_client()
 
 @pytest.fixture
 def runner(app):
-    """Fixture para usar el test CLI runner de Flask."""
     return app.test_cli_runner()
