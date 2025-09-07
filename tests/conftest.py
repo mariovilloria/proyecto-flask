@@ -2,29 +2,22 @@
 import pytest
 import mongomock
 from app import app as flask_app
-import app as app_module
+import app as app_module  # importa tu módulo para reemplazar db
 
 @pytest.fixture
 def app(monkeypatch):
-    """Crea una app Flask para tests usando mongomock y desactiva CSRF."""
+    # Crear DB de prueba
+    test_db = mongomock.MongoClient().my_database
 
-    # 1. Crear cliente de Mongo falso y DB de prueba
-    mongo_client = mongomock.MongoClient()
-    test_db = mongo_client['test_database']
-
-    # 2. Reemplazar db de la app por la DB de prueba
+    # Reemplazar la variable db de tu app por la de prueba
     monkeypatch.setattr(app_module, 'db', test_db)
 
-    # 3. Configurar testing y desactivar CSRF
+    # Configuración de test
     flask_app.config['TESTING'] = True
-    flask_app.config['WTF_CSRF_ENABLED'] = False
+    flask_app.config['WTF_CSRF_ENABLED'] = False  # desactiva CSRF
 
     yield flask_app
 
 @pytest.fixture
 def client(app):
     return app.test_client()
-
-@pytest.fixture
-def runner(app):
-    return app.test_cli_runner()
