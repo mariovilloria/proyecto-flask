@@ -6,7 +6,7 @@ from bson import ObjectId
 def app():
     flask_app.config.update({
         "TESTING": True,
-        "MONGO_URI": "mongodb://localhost:27017/vehiculos_test",
+        "MONGO_URI": "mongomock://localhost/vehiculos_test",  # base en memoria     
         "WTF_CSRF_ENABLED": False
     })
     yield flask_app
