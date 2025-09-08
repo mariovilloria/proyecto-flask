@@ -1,7 +1,7 @@
 import pytest
 import mongomock
 from flask import Flask
-from app import create_app   # ← usamos la función factory
+from app import app as flask_app   # ← importas la variable 'app' que YA existe
 
 @pytest.fixture
 def app():
@@ -18,14 +18,13 @@ def app():
     db.db = mongo_client["vehiculos_test"]
 
     # 3. Configurar Flask
-    app = create_app()
-    app.config.update({
+    flask_app.config.update({
         "TESTING": True,
         "MONGO_URI": "mongomock://localhost/vehiculos_test",
         "WTF_CSRF_ENABLED": False
     })
 
-    yield app
+    yield flask_app
 
 @pytest.fixture
 def client(app):
