@@ -1,9 +1,11 @@
+
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import pytest
 import mongomock
 from flask import Flask
 from app import db   # ← importamos solo 'db', no 'app'
-import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 
 
