@@ -1,4 +1,4 @@
-from app import app, db
+from app._init_ import app, db
 
 if __name__ == '__main__':
     try:

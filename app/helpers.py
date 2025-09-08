@@ -1,7 +1,7 @@
 from datetime import datetime
 from bson import ObjectId
 from flask import abort, jsonify
-from app import db
+from app._init_ import db
 
 def update_order_status(order_id):
     """
