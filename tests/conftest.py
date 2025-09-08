@@ -1,7 +1,6 @@
 import pytest
 import mongomock
-from flask import Flask
-from app import app as flask_app
+from app import app as flask_app   # ← importas la variable 'app' que YA existe
 
 @pytest.fixture
 def app():
