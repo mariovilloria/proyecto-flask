@@ -1,12 +1,12 @@
 from flask import Blueprint, request, redirect, url_for, flash, render_template, jsonify
 from flask_login import current_user, login_required
-from app import mongo, db
+from app._init_ import mongo, db
 from datetime import datetime, timedelta
 from bson import ObjectId
 from pymongo import ReturnDocument
 from app.helpers import update_order_status, validate_object_id
 import re
-from app import cache
+from app._init_ import cache
 
 
 ordenes_bp = Blueprint('ordenes', __name__)

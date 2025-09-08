@@ -1,9 +1,9 @@
 from flask import Blueprint, request, redirect, url_for, flash, render_template
 from flask_login import current_user, login_required
-from app import mongo
+from app._init_ import mongo
 from datetime import datetime
 from bson import ObjectId
-from app import db
+from app._init_ import db
 from werkzeug.security import generate_password_hash
 
 usuarios_bp = Blueprint('usuarios', __name__)

@@ -3,7 +3,7 @@ from flask_login import current_user, login_required
 from datetime import datetime, timedelta
 from bson import ObjectId
 import pymongo, calendar
-from app import db, cache
+from app._init_ import db, cache
 from flask import current_app
 
 

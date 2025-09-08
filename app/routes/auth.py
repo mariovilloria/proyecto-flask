@@ -1,10 +1,10 @@
 from flask import Blueprint, request, redirect, url_for, flash, render_template, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
-from app import mongo, User
+from app._init_ import mongo, User
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
-from app import db 
+from app._init_ import db 
 from bson import ObjectId
 auth_bp = Blueprint('auth', __name__)
 
